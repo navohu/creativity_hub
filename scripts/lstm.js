@@ -392,8 +392,12 @@ $(function() {
   // attach button handlers
   $('#learn').click(function(){ 
     reinit();
-    if(iid !== null) { clearInterval(iid); }
-    iid = setInterval(tick, 0); 
+    if(iid !== null) { 
+      clearInterval(iid); 
+      d3.select('#visualisation').selectAll("*").remove();
+      updateVisual(0, 0); 
+    }
+    iid = setInterval(tick, 0);
   });
   $('#stop').click(function(){ 
     if(iid !== null) { clearInterval(iid); }
