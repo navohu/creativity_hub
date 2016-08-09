@@ -3,9 +3,13 @@ var ymax = 30;
 var xmin = 0;
 var xmax = 300;
 var positions = [];
+var Graph;
 
+function initialiseGraph(){
+  d3.selectAll("path.line").remove();
+  positions = [];
   // can be used to graph loss, or accuract over time
-var Graph = d3.select('#visualisation')
+  Graph = d3.select('#visualisation')
     .attr('width', '100%')
     .attr('height', 500),
     WIDTH = $("#visualisation").parent().width(),
@@ -26,33 +30,34 @@ var Graph = d3.select('#visualisation')
     yAxis = d3.axisLeft()
       .scale(yRange);
 
-// Graph.classed("svg-container", true)
-//   .append("svg")
-//   .attr("preserveAspectRatio", "xMinYMin meet")
-//   .attr("viewBox", "0 0 600 400")
-//   .classed("svg-content-responsive", true);
+  // Graph.classed("svg-container", true)
+  //   .append("svg")
+  //   .attr("preserveAspectRatio", "xMinYMin meet")
+  //   .attr("viewBox", "0 0 600 400")
+  //   .classed("svg-content-responsive", true);
 
-Graph.append('svg:g')
-  .attr('class', 'x axis')
-  .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
-  .call(xAxis)
-  .append("text")
-  .attr('x', MARGINS.right)
-  .attr('y', HEIGHT - MARGINS.bottom)
-  .attr('stroke', '#a94442')
-  .style("text-anchor", "left")
-  .text('Tick iteration');
+  Graph.append('svg:g')
+    .attr('class', 'x axis')
+    .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
+    .call(xAxis)
+    .append("text")
+    .attr('x', MARGINS.right)
+    .attr('y', HEIGHT - MARGINS.bottom)
+    .attr('stroke', '#a94442')
+    .style("text-anchor", "left")
+    .text('Tick iteration');
 
-Graph.append('svg:g')
-  .attr('class', 'y axis')
-  .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
-  .call(yAxis)
-  .append('text')
-  .attr('x', MARGINS.left)
-  .attr('y', MARGINS.top -10)
-  .attr('stroke', '#a94442')
-  .style("text-anchor", "middle")
-  .text('Median perplexity');
+  Graph.append('svg:g')
+    .attr('class', 'y axis')
+    .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
+    .call(yAxis)
+    .append('text')
+    .attr('x', MARGINS.left)
+    .attr('y', MARGINS.top -10)
+    .attr('stroke', '#a94442')
+    .style("text-anchor", "middle")
+    .text('Median perplexity');
+}
 
 function updateVisual(step, y){
   d3.select('#visualisation').selectAll("*").remove();

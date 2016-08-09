@@ -99,7 +99,7 @@ var reinit_learning_rate_slider = function() {
 
 var reinit = function() {
   // note: reinit writes global vars
-  
+
   // eval options to set some globals
   eval($("#newnet").val());
 
@@ -375,6 +375,7 @@ var gradCheck = function() {
 var iid = null;
 $(function() {
   // pplGraph.drawSelf(document.getElementById("pplgraph"));
+  initialiseGraph();
   $('#epoch').text('Epoch: ' + 0);
   $('#ppl').text('Perplexity: ' + 0);
   $('#ticktime').text('Forw/bwd time per example: ' + 0);
@@ -394,13 +395,12 @@ $(function() {
     reinit();
     if(iid !== null) { 
       clearInterval(iid); 
-      d3.select('#visualisation').selectAll("*").remove();
-      updateVisual(0, 0); 
+      initialiseGraph();
     }
     iid = setInterval(tick, 0);
   });
   $('#stop').click(function(){ 
-    if(iid !== null) { clearInterval(iid); }
+    if(iid !== null) { clearInterval(iid);}
     iid = null;
   });
   $("#resume").click(function(){
