@@ -324,8 +324,6 @@ var tick = function() {
     $('#epoch').text('Epoch: ' + (tick_iter/epoch_size).toFixed(2));
     $('#ppl').text('Perplexity: ' + cost_struct.ppl.toFixed(2));
     $('#ticktime').text('Forw/bwd time per example: ' + tick_time.toFixed(1) + 'ms');
-    $('#mean_ppl').text('Median Perplexity: ' + median(ppl_list).toFixed(2));
-    $('#tick_iter').text('Tick iteration: ' + tick_iter);
 
 
     if(tick_iter % 20 === 0) {
@@ -336,7 +334,7 @@ var tick = function() {
       pplGraph.drawSelf(document.getElementById("pplgraph"));
       
       //Print values to text area
-      var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median(ppl_list).toFixed(2) + "\n";
+      var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median_ppl.toFixed(2) + "\n";
       var temp = $('#analytics').val();
       $('#analytics').val(temp + analyticValue);
       $('#analytics').scrollTop($('#analytics')[0].scrollHeight);
@@ -376,12 +374,20 @@ var gradCheck = function() {
 
 var iid = null;
 $(function() {
-  pplGraph.drawSelf(document.getElementById("pplgraph"));
+  // pplGraph.drawSelf(document.getElementById("pplgraph"));
   $('#epoch').text('Epoch: ' + 0);
   $('#ppl').text('Perplexity: ' + 0);
   $('#ticktime').text('Forw/bwd time per example: ' + 0);
   $('#mean_ppl').text('Median Perplexity: ' + 0);
   $('#tick_iter').text('Tick iteration: ' + 0);
+
+  //initial print
+  var analyticValue = 'X(Tick iteration): ' + 0 + ' Y(Median Perplexity): ' + 0 + "\n";
+  var temp = $('#analytics').val();
+  $('#analytics').val(temp + analyticValue);
+
+  //initial found of characters
+  $("#prepro_status").text('Found ' + 0 + ' distinct characters ');
 
   // attach button handlers
   $('#learn').click(function(){ 
@@ -418,6 +424,15 @@ $(function() {
 
   //$('#gradcheck').click(gradCheck);
 
+  //initial Learning Rate Slider
+  $("#lr_slider").slider({
+    min: Math.log10(0.01) - 3.0,
+    max: Math.log10(0.01) + 0.05,
+    step: 0.05,
+    value: 0
+  });
+  
+  //initial temperature slider
   $("#temperature_slider").slider({
     min: -1,
     max: 1.05,

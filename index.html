@@ -63,50 +63,63 @@
             <div class="row placeholders">
                 <div id="wrap">
                   <div class="row">
-                    <div class="col-sm-6">
-                      <h3>Input Sentences</h3>
-                      <button type="button" id="learn" class="btn btn-outline-success btn-lg" aria-pressed="true">learn/restart</button>
-                      <button type="button" id="resume" class="btn btn-outline-warning btn-lg" aria-pressed="true">resume</button>
-                      <button type="button" id="stop" class="btn btn-outline-danger btn-lg" aria-pressed="true">pause</button>
+                    <div class="col-sm-6 myColumn">
+                      <h3>Training Graph</h3>
                       <svg id="visualisation" width="500" height="500"></svg>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-6 myColumn">
                       <h3>Analytics</h3>
-                      <textarea id="analytics"></textarea>
+                      <button type="button" id="learn" class="btn btn-success btn-lg" aria-pressed="true">Learn/Restart</button>
+                      <br>
+                      <button type="button" id="resume" class="btn btn-warning btn-lg" aria-pressed="true">Resume</button>
+                      <br>
+                      <button type="button" id="stop" class="btn btn-danger btn-lg" aria-pressed="true">Pause</button>
+                      <br>
+                      <textarea id="analytics" class="form-control m-l-1 m-r-1 textbox"></textarea>
                       <div class="lead" id="ticktime"></div>
                       <div class="lead" id="gradclip"></div>
                       <div class="lead" id="epoch"></div>
                       <div class="lead" id="ppl"></div>
-                      <div class="lead" id="mean_ppl"></div>
-                      <div class="lead" id="tick_iter"></div>
                     </div>
                   </div>
                   <div>
-                    <canvas id="pplgraph" style="width: 50%; height=200px;"></canvas>
-                    <textarea class="form-control m-l-1 m-r-1" id="ti">
-                the company has, say, 6 months of runway
-                or to put it more brutally, 6 months before they're out of business
-                they expect to avoid that by raising more from investors
-                that last sentence is the fatal one
-                    </textarea>
+                  <div class="row">
+                    <div class="col-sm-6 myColumn">
+                      <h3>Input Text</h3>
+                      <p class="text-primary">Copy your input in the textbox or upload your own text file.</p>
+                      <textarea class="form-control m-l-1 m-r-1 second textbox" id="ti">
+the company has, say, 6 months of runway
+or to put it more brutally, 6 months before they're out of business
+they expect to avoid that by raising more from investors
+that last sentence is the fatal one
+                      </textarea>
+                      <br>
+                      <button type="button" id="fileupload" class="btn btn-lg" aria-pressed="true">Upload File</button>
+                    </div>
+                    <div class="col-sm-6 myColumn">
+                      <h3>Model Parameters</h3>
+                      <p class="text-primary">Change the parameters if you wish.</p>
+                        <textarea class="form-control m-l-1 m-r-1 second textbox" id="newnet" style="width:100%; height:200px;">
+// model parameters
+generator = 'lstm'; // can be 'rnn' or 'lstm'
+hidden_sizes = [20,20]; // list of sizes of hidden layers
+letter_size = 5; // size of letter embeddings
+
+// optimization
+regc = 0.000001; // L2 regularization strength
+learning_rate = 0.01; // learning rate
+clipval = 5.0; // clip gradients at this value
+                        </textarea>
+                        <br>
+                        <p class="h5" id="prepro_status"></p>
+                    </div>
                   </div>
-                  <p class="h5" id="prepro_status"></p>
+                  <!-- <div>
+                    <canvas id="pplgraph" style="width: 50%; height=200px;"></canvas>
+                  </div> -->
 
+                  <br />
                   <!-- <button id="gradcheck">gradcheck</button> -->
-                  <textarea id="newnet" style="width:100%; height:200px;">
-
-                // model parameters
-                generator = 'lstm'; // can be 'rnn' or 'lstm'
-                hidden_sizes = [20,20]; // list of sizes of hidden layers
-                letter_size = 5; // size of letter embeddings
-
-                // optimization
-                regc = 0.000001; // L2 regularization strength
-                learning_rate = 0.01; // learning rate
-                clipval = 5.0; // clip gradients at this value
-                  </textarea><br />
-                  protip: if your perplexity is exploding with Infinity try lowering the initial learning rate
-                  <br>
                   <div id="status">
 
                     <div>
