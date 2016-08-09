@@ -12,7 +12,7 @@ var Graph = d3.select('#visualisation'),
       top: 20,
       right: 20,
       bottom: 20,
-      left: 50
+      left: 20
     },
     xRange = d3.scaleLinear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([xmin, xmax]),
 
@@ -53,7 +53,7 @@ function updateVisual(step, y){
       top: 20,
       right: 20,
       bottom: 20,
-      left: 50
+      left: 20
     },
 
     xRange = d3.scaleLinear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([xmin, xmax]),
@@ -84,8 +84,8 @@ function updateVisual(step, y){
   positions.push({step: step, y: y});
 
   var lineFunc = d3.line()
-    .x(function(d){ console.log("Step: " + d.step); return d.step;})
-    .y(function(d){ console.log("Y: " + yRange(d.y)); return yRange(d.y)});
+    .x(function(d){ return d.step;})
+    .y(function(d){ return yRange(d.y)});
 
   Graph.append('path')
     .attr('class', 'line')

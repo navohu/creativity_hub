@@ -11,7 +11,7 @@ var indexToLetter = {};
 var vocab = [];
 var data_sents = [];
 var solver = new R.Solver(); // should be class because it needs memory for step caches
-var pplGraph = new Rvis.Graph();
+// var pplGraph = new Rvis.Graph();
 
 
 
@@ -106,7 +106,7 @@ var reinit = function() {
   reinit_learning_rate_slider();
 
   solver = new R.Solver(); // reinit solver
-  pplGraph = new Rvis.Graph();
+  // pplGraph = new Rvis.Graph();
 
   ppl_list = [];
   tick_iter = 0;
@@ -330,8 +330,8 @@ var tick = function() {
       var median_ppl = median(ppl_list);
       ppl_list = [];
       updateVisual(tick_iter, median_ppl);
-      pplGraph.add(tick_iter, median_ppl);
-      pplGraph.drawSelf(document.getElementById("pplgraph"));
+      // pplGraph.add(tick_iter, median_ppl);
+      // pplGraph.drawSelf(document.getElementById("pplgraph"));
       
       //Print values to text area
       var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median_ppl.toFixed(2) + "\n";
@@ -431,7 +431,7 @@ $(function() {
     step: 0.05,
     value: 0
   });
-  
+
   //initial temperature slider
   $("#temperature_slider").slider({
     min: -1,
@@ -441,6 +441,7 @@ $(function() {
     slide: function( event, ui ) {
       sample_softmax_temperature = Math.pow(10, ui.value);
       $("#temperature_text").text( sample_softmax_temperature.toFixed(2) );
+      console.log(sample_softmax_temperature);
     }
   });
 });
