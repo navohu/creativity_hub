@@ -120,8 +120,15 @@ clipval = 5.0; // clip gradients at this value
 
                   <br />
                   <!-- <button id="gradcheck">gradcheck</button> -->
-                  <div id="status">
+                  <div class="row">
+                  <div class="col-sm-6 myColumn">
                     <h3>Model Samples</h3>
+                    <p class="text-primary">These are samples from the model that is generate every 100th iteration.</p>
+                    <div id="sample_style">
+                      <div id="samples"></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 myColumn"></div>
 
                     <!-- <div>
                       <h3>Training stats:</h3>

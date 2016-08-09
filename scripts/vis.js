@@ -6,6 +6,7 @@ var positions = [];
 var Graph;
 
 function initialiseGraph(){
+  d3.select('#visualisation').selectAll("*").remove();
   d3.selectAll("path.line").remove();
   positions = [];
   // can be used to graph loss, or accuract over time
@@ -41,8 +42,8 @@ function initialiseGraph(){
     .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
     .call(xAxis)
     .append("text")
-    .attr('x', MARGINS.right)
-    .attr('y', HEIGHT - MARGINS.bottom)
+    .attr('x', WIDTH - 2*MARGINS.right)
+    .attr('y', 0)
     .attr('stroke', '#a94442')
     .style("text-anchor", "left")
     .text('Tick iteration');
@@ -53,7 +54,7 @@ function initialiseGraph(){
     .call(yAxis)
     .append('text')
     .attr('x', MARGINS.left)
-    .attr('y', MARGINS.top -10)
+    .attr('y', MARGINS.top)
     .attr('stroke', '#a94442')
     .style("text-anchor", "middle")
     .text('Median perplexity');
@@ -88,6 +89,9 @@ function updateVisual(step, y){
     .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
     .call(yAxis)
     .append('text')
+    .attr('x', MARGINS.left)
+    .attr('y', MARGINS.top)
+    .attr('stroke', '#a94442')
     .style("text-anchor", "middle")
     .text('Median perplexity');
   
@@ -96,6 +100,9 @@ function updateVisual(step, y){
     .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
     .call(xAxis)
     .append("text")
+    .attr('x', WIDTH - 2*MARGINS.right)
+    .attr('y', 0)
+    .attr('stroke', '#a94442')
     .style("text-anchor", "left")
     .text('Tick iteration');
 

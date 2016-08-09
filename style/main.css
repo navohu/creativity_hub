@@ -144,6 +144,22 @@ textarea.textbox{
 }
 
 /* 
+ * Samples
+ */
+
+ #sample_style{
+  width: 100%;
+  height: 400px;
+  overflow: scroll;
+  background-color: #ccc;
+  border: 4px dashed black;
+ }
+
+ .sampleButton{
+  width: 100%;
+ }
+
+/* 
  * Creating the histogram bars layout
  */
 

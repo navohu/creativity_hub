@@ -279,6 +279,27 @@ function median(values) {
   else return (values[half-1] + values[half]) / 2.0;
 }
 
+function predict(){
+  var temp = predictSentence(model, true, sample_softmax_temperature);
+  var pred = "";
+  for(var i =0; i < 10; i++){ 
+    pred = pred + temp;
+  }
+  return pred;
+}
+
+function sample(iter){
+    // var pred_div = '<div class="apred">'+pred+'</div>'
+  var pred_button = '<button type="button" class="btn btn-lg outline sampleButton" data-toggle="modal" data-target="#myModal' + iter + '"> Open sample ' + tick_iter/100 + '</button><br>';
+  $('#samples').append(pred_button);
+  // $('#sample_output').append('<p class="apred">'+pred+'</p>');
+
+  $('#samples').append(
+    '<div class="modal fade" id="myModal' + iter + '" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Sample' + iter/100 + '</h4></div><div class="modal-body"><p class="apred">'+ predict() + '</p></div></div></div></div>')
+  $('#samples').scrollTop($('#samples')[0].scrollHeight);
+
+}
+
 var ppl_list = [];
 var tick_iter = 0;
 var tick = function() {
@@ -304,14 +325,10 @@ var tick = function() {
 
   // evaluate now and then
   tick_iter += 1;
-  if(tick_iter % 50 === 0) {
+  if(tick_iter % 100 === 0) {
     // draw samples
-    $('#samples').html('');
-    for(var q=0;q<5;q++) {
-      var pred = predictSentence(model, true, sample_softmax_temperature);
-      var pred_div = '<div class="apred">'+pred+'</div>'
-      $('#samples').append(pred_div);
-    }
+    sample(tick_iter);
+
   }
   if(tick_iter % 10 === 0) {
     // draw argmax prediction
@@ -324,21 +341,20 @@ var tick = function() {
     $('#epoch').text('Epoch: ' + (tick_iter/epoch_size).toFixed(2));
     $('#ppl').text('Perplexity: ' + cost_struct.ppl.toFixed(2));
     $('#ticktime').text('Forw/bwd time per example: ' + tick_time.toFixed(1) + 'ms');
+  }
 
-
-    if(tick_iter % 20 === 0) {
-      var median_ppl = median(ppl_list);
-      ppl_list = [];
-      updateVisual(tick_iter, median_ppl);
-      // pplGraph.add(tick_iter, median_ppl);
-      // pplGraph.drawSelf(document.getElementById("pplgraph"));
-      
-      //Print values to text area
-      var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median_ppl.toFixed(2) + "\n";
-      var temp = $('#analytics').val();
-      $('#analytics').val(temp + analyticValue);
-      $('#analytics').scrollTop($('#analytics')[0].scrollHeight);
-    }
+  if(tick_iter % 100 === 0 || tick_iter === 1) {
+    var median_ppl = median(ppl_list);
+    ppl_list = [];
+    updateVisual(tick_iter, median_ppl);
+    // pplGraph.add(tick_iter, median_ppl);
+    // pplGraph.drawSelf(document.getElementById("pplgraph"));
+    
+    //Print values to text area
+    var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median_ppl.toFixed(2) + "\n";
+    var temp = $('#analytics').val();
+    $('#analytics').val(temp + analyticValue);
+    $('#analytics').scrollTop($('#analytics')[0].scrollHeight);
   }
 }
 
@@ -396,6 +412,12 @@ $(function() {
     if(iid !== null) { 
       clearInterval(iid); 
       initialiseGraph();
+      $('#analytics').val("");
+    }
+    if($("#stop").data('clicked', true)){
+      clearInterval(iid); 
+      initialiseGraph();
+      $('#analytics').val("");
     }
     iid = setInterval(tick, 0);
   });
@@ -448,4 +470,4 @@ $(function() {
       console.log(sample_softmax_temperature);
     }
   });
-});
+}); 
