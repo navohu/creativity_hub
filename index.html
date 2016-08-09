@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head> 
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dashboard Template for Bootstrap</title>
+
+    <!-- <script type="text/javascript" src="lib/MIDI.js/build/MIDI.js"></script>
+    <script type="text/javascript" src="lib/js/midi/player.js"></script> -->
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+
+      <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="style/main.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link href="lib/jquery-ui.min.css" rel="stylesheet">
+
+    <script src="lib/jquery-1.8.3.min.js"></script>
+    <script src="lib/jquery-ui.min.js"></script>
+    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="scripts/recurrent.js"></script>
+    <script src="scripts/recurrentvis.js"></script>
+    <script src="scripts/vis.js"></script>
+    <script src="scripts/lstm.js"></script>
+  </head>
+
+  <body>
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#">Music Generator</a>
+            <a class="navbar-brand" href="#">Poem Generator</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+              <li class="active"><a href="#">Demo <span class="sr-only">(current)</span></a></li>
+              <li><a href="#">Updates</a></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+              <li><a href="">About</a></li>
+            </ul>
+          </div>
+          <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h1 class="page-header">Deep Recurrent Nets Character Generation</h1>
+            <div class="row placeholders">
+                <div id="wrap">
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <h3>Input Sentences</h3>
+                      <button type="button" id="learn" class="btn btn-outline-success btn-lg" aria-pressed="true">learn/restart</button>
+                      <button type="button" id="resume" class="btn btn-outline-warning btn-lg" aria-pressed="true">resume</button>
+                      <button type="button" id="stop" class="btn btn-outline-danger btn-lg" aria-pressed="true">pause</button>
+                      <svg id="visualisation" width="500" height="500"></svg>
+                    </div>
+                    <div class="col-sm-6">
+                      <h3>Analytics</h3>
+                      <div class="lead" id="ticktime"></div>
+                      <div class="lead" id="gradclip"></div>
+                      <div class="lead" id="epoch"></div>
+                      <div class="lead" id="ppl"></div>
+                      <div class="lead" id="mean_ppl"></div>
+                      <div class="lead" id="tick_iter"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <canvas id="pplgraph" style="width: 50%; height=200px;"></canvas>
+                    <textarea class="form-control m-l-1 m-r-1" id="ti">
+                the company has, say, 6 months of runway
+                or to put it more brutally, 6 months before they're out of business
+                they expect to avoid that by raising more from investors
+                that last sentence is the fatal one
+                    </textarea>
+                  </div>
+                  <p class="h5" id="prepro_status"></p>
+
+                  <!-- <button id="gradcheck">gradcheck</button> -->
+                  <textarea id="newnet" style="width:100%; height:200px;">
+
+                // model parameters
+                generator = 'lstm'; // can be 'rnn' or 'lstm'
+                hidden_sizes = [20,20]; // list of sizes of hidden layers
+                letter_size = 5; // size of letter embeddings
+
+                // optimization
+                regc = 0.000001; // L2 regularization strength
+                learning_rate = 0.01; // learning rate
+                clipval = 5.0; // clip gradients at this value
+                  </textarea><br />
+                  protip: if your perplexity is exploding with Infinity try lowering the initial learning rate
+                  <br>
+                  <div id="status">
+
+                    <div>
+                      <h3>Training stats:</h3>
+                      <div class="aslider">
+                        <div class="slider_header">Learning rate: you want to anneal this over time if you're training for longer time.</div>
+                        <div class="theslider" id="lr_slider"></div>
+                        <div class="slider_value" id="lr_text"></div>
+                      </div>
+
+                      
+
+                      <div style="clear:both;"></div>
+                    </div>
+
+                    <h3>Model samples:</h3>
+                    <div id="controls">
+                      <div class="aslider">
+                        <div class="slider_header">Softmax sample temperature: lower setting will generate more likely predictions, but you'll see more of the same common words again and again. Higher setting will generate less frequent words but you might see more spelling errors.</div>
+                        <div class="theslider" id="temperature_slider"></div>
+                        <div class="slider_value" id="temperature_text"></div>
+                      </div>
+                    </div>
+                    <div id="samples"></div>
+                    <div class="hh">Greedy argmax prediction:</div>
+                    <div id="argmax"></div>
+                  </div>
+                  <div id="io">
+                    <h3>I/O save/load model JSON</h3>
+
+                    <button id="savemodel" class="abutton">save model</button>
+                    <button id="loadmodel" class="abutton">load model</button>
+                    <div>
+                      You can save or load models with JSON using the textarea below.
+                    </div>
+                    <textarea style="width:100%; height:200px;" id="tio"></textarea>
+
+                    <br>
+
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bootstrap core JavaScript
+      ================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <!-- <script type="text/javascript" src="scripts/MIDIPlayer.js"></script> -->
+      <!-- <script type="text/javascript" src="scripts/MIDIFile.js"></script> -->
+      <script type="text/javascript" src="scripts/newvis.js"></script>
+      <script type="text/javascript" src="scripts/vis.js"></script>
+      <!-- <script type='text/javascript' src='http://www.midijs.net/lib/midi.js'></script> -->
+
+  </body>
+</html>
