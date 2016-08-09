@@ -327,12 +327,19 @@ var tick = function() {
     $('#mean_ppl').text('Median Perplexity: ' + median(ppl_list).toFixed(2));
     $('#tick_iter').text('Tick iteration: ' + tick_iter);
 
+
     if(tick_iter % 20 === 0) {
       var median_ppl = median(ppl_list);
       ppl_list = [];
       updateVisual(tick_iter, median_ppl);
       pplGraph.add(tick_iter, median_ppl);
       pplGraph.drawSelf(document.getElementById("pplgraph"));
+      
+      //Print values to text area
+      var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median(ppl_list).toFixed(2) + "\n";
+      var temp = $('#analytics').val();
+      $('#analytics').val(temp + analyticValue);
+      $('#analytics').scrollTop($('#analytics')[0].scrollHeight);
     }
   }
 }

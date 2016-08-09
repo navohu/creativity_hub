@@ -110,6 +110,32 @@ textarea.form-control {
 }
 
 /* 
+ * Rows and columns
+ */
+
+.row{
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.row > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 
+ * Analytics
+ */
+
+#analytics{
+  min-width: 100%;
+  height: 40%;
+}
+
+/* 
  * Creating the histogram bars layout
  */
 
