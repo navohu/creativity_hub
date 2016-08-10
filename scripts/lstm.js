@@ -126,6 +126,7 @@ var reinit = function() {
   }
   initVocab(data_sents, 1); // takes count threshold for characters
   model = initModel();
+  initialiseGraph();
 }
 /*
   Creating a button where you can upload your own file to the model
@@ -330,12 +331,14 @@ function median(values) {
 }
 
 function predict(){
-  var temp = predictSentence(model, true, sample_softmax_temperature);
-  var pred = "";
+  var out = "";
+  // Printing 10 samples
   for(var i =0; i < 10; i++){ 
-    pred = pred + temp;
+    var temp = predictSentence(model, true, sample_softmax_temperature);
+    var pred = '<p class="apred">'+ temp + '</p>';
+    out = out + pred;
   }
-  return pred;
+  return out;
 }
 
 function sample(iter){
@@ -345,7 +348,7 @@ function sample(iter){
   // $('#sample_output').append('<p class="apred">'+pred+'</p>');
 
   $('#samples').append(
-    '<div class="modal fade" id="myModal' + iter + '" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Sample' + iter/100 + '</h4></div><div class="modal-body"><p class="apred">'+ predict() + '</p></div></div></div></div>');
+    '<div class="modal fade" id="myModal' + iter + '" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Sample' + iter/100 + '</h4></div><div class="modal-body">'+ predict() + '</div></div></div></div>');
 
   $('#sample_style').scrollTop($('#sample_style')[0].scrollHeight);
 
@@ -379,7 +382,6 @@ var tick = function() {
   if(tick_iter % 100 === 0) {
     // draw samples
     sample(tick_iter);
-    $('#samples').scrollTop($('#samples')[0].scrollHeight);
 
   }
   if(tick_iter % 10 === 0) {

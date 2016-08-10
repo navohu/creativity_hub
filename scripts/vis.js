@@ -6,6 +6,10 @@ var positions = [];
 var Graph;
 
 function initialiseGraph(){
+  ymin = 0;
+  ymax = 30;
+  xmin = 0;
+  xmax = 300;
   d3.select('#visualisation').selectAll("*").remove();
   d3.selectAll("path.line").remove();
   positions = [];
