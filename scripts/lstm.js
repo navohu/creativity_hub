@@ -124,6 +124,53 @@ var reinit = function() {
   initVocab(data_sents, 1); // takes count threshold for characters
   model = initModel();
 }
+/*
+  Creating a button where you can upload your own file to the model
+*/
+function handleFile(){
+  input = document.getElementById('file');
+  if (!input) {
+      alert("Um, couldn't find the fileinput element.");
+  }
+  else if (!input.files) {
+    alert("This browser doesn't seem to support the `files` property of file inputs.");
+  }
+  else if (!input.files[0]) {
+    alert("Please select a file before clicking 'Load'");               
+  }
+  else {
+    file = input.files[0];
+    fr = new FileReader();
+    fr.onload = receivedText;
+    // console.log(receivedText());
+    fr.readAsText(file);
+    // fr.readAsDataURL(file);
+  }
+}
+// Adding the values to the textarea
+function receivedText() {
+  document.getElementById('ti').value = fr.result;
+}
+
+// Letting the user choose a .txt file
+// $(function() {
+//   // We can attach the `fileselect` event to all file inputs on the page
+  
+//   });
+
+// var loadText = function(evt){
+//   var files = evt.target.files; // FileList object
+//   // files is a FileList of File objects. List some properties.
+//   var output = [];
+//   for (var i = 0, f; f = files[i]; i++) {
+//     output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+//                 f.size, ' bytes, last modified: ',
+//                 f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+//                 '</li>');
+//   }
+//   document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+//   document.getElementById('files').addEventListener('change', handleFileSelect, false);
+// }
 
 var saveModel = function() {
   var out = {};
@@ -295,8 +342,9 @@ function sample(iter){
   // $('#sample_output').append('<p class="apred">'+pred+'</p>');
 
   $('#samples').append(
-    '<div class="modal fade" id="myModal' + iter + '" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Sample' + iter/100 + '</h4></div><div class="modal-body"><p class="apred">'+ predict() + '</p></div></div></div></div>')
-  $('#samples').scrollTop($('#samples')[0].scrollHeight);
+    '<div class="modal fade" id="myModal' + iter + '" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Sample' + iter/100 + '</h4></div><div class="modal-body"><p class="apred">'+ predict() + '</p></div></div></div></div>');
+
+  $('#sample_style').scrollTop($('#sample_style')[0].scrollHeight);
 
 }
 
@@ -328,6 +376,7 @@ var tick = function() {
   if(tick_iter % 100 === 0) {
     // draw samples
     sample(tick_iter);
+    $('#samples').scrollTop($('#samples')[0].scrollHeight);
 
   }
   if(tick_iter % 10 === 0) {
@@ -431,6 +480,8 @@ $(function() {
     }
   });
 
+  // $('#loadText').click(loadText());
+
   $("#savemodel").click(saveModel);
   $("#loadmodel").click(function(){
     var j = JSON.parse($("#tio").val());
@@ -469,5 +520,19 @@ $(function() {
       $("#temperature_text").text( sample_softmax_temperature.toFixed(2) );
       console.log(sample_softmax_temperature);
     }
+  });
+
+  /* Letting the user choose a file to upload */
+  $(document).on('change', ':file', function() {
+    var input = $(this),
+        numFiles = input.get(0).files ? input.get(0).files.length : 1,
+        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    input.trigger('fileselect', [numFiles, label]);
+  });
+  /* Watching the file(s) we picked */
+  $(':file').on('fileselect', function(event, numFiles, label) {
+      var input = $(this).parents('.input-group').find(':text');
+      handleFile();
+      input.val(label);
   });
 }); 

@@ -94,7 +94,20 @@ they expect to avoid that by raising more from investors
 that last sentence is the fatal one
                       </textarea>
                       <br>
-                      <button type="button" id="fileupload" class="btn btn-lg" aria-pressed="true">Upload File</button>
+                      <!-- <button type="file" id="files" class="btn btn-lg" name="files[]" multiple>Upload File</button> -->
+                      <!-- <span class="btn btn-block btn-primary">
+                        Browse<input type="file" id="files"  name="files[]" multiple style="display: none;">
+                      </span>
+                      <output id="list"></output> -->
+                      <div class="input-group">
+                          <label class="input-group-btn">
+                              <span class="btn btn-primary">
+                                  Browse&hellip; <input type="file" id="file" style="display: none;">
+                              </span>
+                          </label>
+                          <input type="text" class="form-control" readonly>
+                      </div>
+                      <p id="editor"></p>
                     </div>
                     <div class="col-sm-6 myColumn">
                       <h3>Model Parameters</h3>
@@ -123,7 +136,7 @@ clipval = 5.0; // clip gradients at this value
                   <div class="row">
                   <div class="col-sm-6 myColumn">
                     <h3>Model Samples</h3>
-                    <p class="text-primary">These are samples from the model that is generate every 100th iteration.</p>
+                    <p class="text-primary">These are samples from the model that is generated every 100th iteration.</p>
                     <div id="sample_style">
                       <div id="samples"></div>
                     </div>
