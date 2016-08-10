@@ -120,7 +120,10 @@ var reinit = function() {
       data_sents.push(sent);
     }
   }
-
+  // Removes the sample data when restarting
+  while($('#samples').children().length > 0){
+    $('#samples').empty()
+  }
   initVocab(data_sents, 1); // takes count threshold for characters
   model = initModel();
 }
