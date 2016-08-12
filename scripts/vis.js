@@ -30,7 +30,8 @@ function initialiseGraph(){
     yRange = d3.scaleLinear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([ymin, ymax]),
 
     xAxis = d3.axisBottom()
-      .scale(xRange),
+      .scale(xRange)
+      .ticks(5),
 
     yAxis = d3.axisLeft()
       .scale(yRange);
@@ -83,7 +84,8 @@ function updateVisual(step, y){
     yRange = d3.scaleLinear().range([HEIGHT - MARGINS.bottom, MARGINS.top]).domain([getMaxYDomain(y), getMinYDomain(y)]),
     
     xAxis = d3.axisBottom()
-      .scale(xRange),
+      .scale(xRange)
+      .ticks(5),
 
     yAxis = d3.axisLeft()
       .scale(yRange);

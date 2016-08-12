@@ -160,6 +160,18 @@ textarea.textbox{
  }
 
 /* 
+ * Model Parameters
+ */
+
+.model-params{
+  padding: 2px;
+}
+
+.model-params input{
+  min-height: 30px;
+}
+
+/* 
  * Importing text
  */
 

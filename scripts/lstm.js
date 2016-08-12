@@ -102,6 +102,19 @@ var reinit = function() {
 
   // eval options to set some globals
   eval($("#newnet").val());
+  console.log(eval($('#newnet').val()));
+
+  // //selecting the generator
+  // var e = document.getElementById('generator');
+  // generator = e.options[1].value;
+
+  // //select the rest of the parameters
+  // hidden_sizes = $('#hidden_sizes').val();
+  // letter_size = $('#letter_size').val();
+  // regc = $('#regc').val();
+  // learning_rate = $('#learning_rate').val();
+  // clipval = $('#clipval').val();
+
 
   reinit_learning_rate_slider();
 
@@ -484,6 +497,9 @@ $(function() {
       iid = setInterval(tick, 0); 
     }
   });
+
+  // initialise all model parameter updates
+  $("form div").append('<div class="inc button">+</div><div class="dec button">-</div>');
 
   // $('#loadText').click(loadText());
 

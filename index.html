@@ -10,9 +10,6 @@
 
     <title>Creativity Hub</title>
 
-    <!-- <script type="text/javascript" src="lib/MIDI.js/build/MIDI.js"></script>
-    <script type="text/javascript" src="lib/js/midi/player.js"></script> -->
-
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
 
@@ -29,10 +26,8 @@
 
     <script src="lib/jquery-1.8.3.min.js"></script>
     <script src="lib/jquery-ui.min.js"></script>
-    
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="scripts/recurrent.js"></script>
-    <!-- <script src="scripts/recurrentvis.js"></script> -->
     <script src="scripts/vis.js"></script>
     <script src="scripts/lstm.js"></script>
   </head>
@@ -94,11 +89,6 @@ they expect to avoid that by raising more from investors
 that last sentence is the fatal one
                       </textarea>
                       <br>
-                      <!-- <button type="file" id="files" class="btn btn-lg" name="files[]" multiple>Upload File</button> -->
-                      <!-- <span class="btn btn-block btn-primary">
-                        Browse<input type="file" id="files"  name="files[]" multiple style="display: none;">
-                      </span>
-                      <output id="list"></output> -->
                       <div class="input-group">
                           <label class="input-group-btn">
                               <span class="btn btn-primary">
@@ -112,7 +102,7 @@ that last sentence is the fatal one
                     <div class="col-sm-6 myColumn">
                       <h3>Model Parameters</h3>
                       <p class="text-primary">Change the parameters if you wish.</p>
-                        <textarea class="form-control m-l-1 m-r-1 second textbox" id="newnet" style="width:100%; height:200px;">
+                      <textarea class="form-control m-l-1 m-r-1 second textbox" id="newnet" style="width:100%; height:200px;">
 // model parameters
 generator = 'lstm'; // can be 'rnn' or 'lstm'
 hidden_sizes = [20,20]; // list of sizes of hidden layers
@@ -127,10 +117,6 @@ clipval = 5.0; // clip gradients at this value
                         <p class="h5" id="prepro_status"></p>
                     </div>
                   </div>
-                  <!-- <div>
-                    <canvas id="pplgraph" style="width: 50%; height=200px;"></canvas>
-                  </div> -->
-
                   <br />
                   <!-- <button id="gradcheck">gradcheck</button> -->
                   <div class="row">
@@ -191,6 +177,5 @@ clipval = 5.0; // clip gradients at this value
       ================================================== -->
       <!-- Placed at the end of the document so the pages load faster -->
       <script type="text/javascript" src="scripts/vis.js"></script>
-
   </body>
 </html>
