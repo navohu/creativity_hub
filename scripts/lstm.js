@@ -473,6 +473,11 @@ $(function() {
   //initial found of characters
   $("#prepro_status").text('Found ' + 0 + ' distinct characters ');
 
+  //initial learning rate slider
+  $("#lr_text").text(0);
+  //initial softmax temperature slidr
+  $("#temperature_text").text(0);
+
   // attach button handlers
   $('#learn').click(function(){ 
     reinit();

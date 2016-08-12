@@ -114,7 +114,7 @@ learning_rate = 0.01; // learning rate
 clipval = 5.0; // clip gradients at this value
                         </textarea>
                         <br>
-                        <p class="h5" id="prepro_status"></p>
+                        <!-- <p class="h5" id="prepro_status"></p> -->
                     </div>
                   </div>
                   <br />
@@ -127,30 +127,24 @@ clipval = 5.0; // clip gradients at this value
                       <div id="samples"></div>
                     </div>
                   </div>
-                  <div class="col-sm-6 myColumn"></div>
-
-                    <!-- <div>
-                      <h3>Training stats:</h3>
+                  <div class="col-sm-6 myColumn">
+                      <h3>Learning rate</h3>
                       <div class="aslider">
-                        <div class="slider_header">Learning rate: you want to anneal this over time if you're training for longer time.</div>
+                        <p class="text-primary">Learning rate: you want to modify this over time if you're training for longer time.</p>
                         <div class="theslider" id="lr_slider"></div>
                         <div class="slider_value" id="lr_text"></div>
                       </div>
 
-                      
-
-                      <div style="clear:both;"></div>
-                    </div>
-
-                    <h3>Model samples:</h3>
-                    <div id="controls">
-                      <div class="aslider">
-                        <div class="slider_header">Softmax sample temperature: lower setting will generate more likely predictions, but you'll see more of the same common words again and again. Higher setting will generate less frequent words but you might see more spelling errors.</div>
-                        <div class="theslider" id="temperature_slider"></div>
-                        <div class="slider_value" id="temperature_text"></div>
+                      <h3>Softmax temperature</h3>
+                      <div id="controls">
+                        <div class="aslider">
+                          <p class="text-primary">Softmax sample temperature: lower setting will generate more likely predictions, but you'll see more of the same common words again and again. Higher setting will generate less frequent words but you might see more spelling errors.</p>
+                          <div class="theslider" id="temperature_slider"></div>
+                          <div class="slider_value" id="temperature_text"></div>
+                        </div>
                       </div>
-                    </div>
-                    <div id="samples"></div>
+                  </div>
+ <!-- 
                     <div class="hh">Greedy argmax prediction:</div>
                     <div id="argmax"></div>
                   </div>
