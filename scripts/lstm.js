@@ -141,53 +141,6 @@ var reinit = function() {
   model = initModel();
   initialiseGraph();
 }
-/*
-  Creating a button where you can upload your own file to the model
-*/
-function handleFile(){
-  input = document.getElementById('file');
-  if (!input) {
-      alert("Um, couldn't find the fileinput element.");
-  }
-  else if (!input.files) {
-    alert("This browser doesn't seem to support the `files` property of file inputs.");
-  }
-  else if (!input.files[0]) {
-    alert("Please select a file before clicking 'Load'");               
-  }
-  else {
-    file = input.files[0];
-    fr = new FileReader();
-    fr.onload = receivedText;
-    // console.log(receivedText());
-    fr.readAsText(file);
-    // fr.readAsDataURL(file);
-  }
-}
-// Adding the values to the textarea
-function receivedText() {
-  document.getElementById('ti').value = fr.result;
-}
-
-// Letting the user choose a .txt file
-// $(function() {
-//   // We can attach the `fileselect` event to all file inputs on the page
-  
-//   });
-
-// var loadText = function(evt){
-//   var files = evt.target.files; // FileList object
-//   // files is a FileList of File objects. List some properties.
-//   var output = [];
-//   for (var i = 0, f; f = files[i]; i++) {
-//     output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-//                 f.size, ' bytes, last modified: ',
-//                 f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-//                 '</li>');
-//   }
-//   document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-//   document.getElementById('files').addEventListener('change', handleFileSelect, false);
-// }
 
 var saveModel = function() {
   var out = {};

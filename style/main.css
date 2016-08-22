@@ -127,7 +127,7 @@ textarea.form-control {
 }
 
 .myColumn{
-  min-height: 400px;
+  min-height: 400px !important;
 }
 
 textarea.second{

@@ -24,12 +24,14 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <link href="lib/jquery-ui.min.css" rel="stylesheet">
 
+    <script src="lib/midi-converter/lib/midi-converter-dist.js"></script>
     <script src="lib/jquery-1.8.3.min.js"></script>
     <script src="lib/jquery-ui.min.js"></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="scripts/recurrent.js"></script>
     <script src="scripts/vis.js"></script>
     <script src="scripts/lstm.js"></script>
+    <script src="scripts/io.js"></script>
   </head>
 
   <body>
@@ -55,6 +57,7 @@
           </div>
           <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
             <h1 class="page-header">Deep Recurrent Nets Character Generation</h1>
+            <p>This is a demo to train a character-based neural network with your own input. The visualisation and model is using the JS library <a href="https://github.com/karpathy/recurrentjs">RecurrentJS</a>. You can upload your own text and see samples of the new text. Also check out the source code for this project: <a href="https://github.com/navohu/creativity_hub">Creativity Hub</a>.</p>
             <div class="row placeholders">
                 <div id="wrap">
                   <div class="row">
@@ -92,7 +95,7 @@ that last sentence is the fatal one
                       <div class="input-group">
                           <label class="input-group-btn">
                               <span class="btn btn-primary">
-                                  Browse&hellip; <input type="file" id="file" style="display: none;">
+                                  Browse Text&hellip; <input type="file" id="file" style="display: none;">
                               </span>
                           </label>
                           <input type="text" class="form-control" readonly>
