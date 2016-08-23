@@ -413,9 +413,14 @@ var gradCheck = function() {
 
 /* Converting MIDI to JSON */
 function midi_json(){
-  MidiConvert.load("scripts/alb_se2.mid", function(midiData){
-    console.log(midiData);
-  });
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var text = MidiConvert.parse(e.target.result);
+    console.log(MidiConvert.parse(e.target.result));
+    $('#ti').val(JSON.stringify(text, undefined, 2));
+    // document.getElementById('ti').value = JSON.parse(text);
+  }
+  reader.readAsBinaryString(document.getElementById("file").files[0]);
 }
 
 /*
@@ -435,7 +440,7 @@ function handleFile(){
     alert("Please select a file before clicking 'Load'");               
   }
   else {
-    fr.onload = receivedText;
+    // fr.onload = receivedText;
     // console.log(receivedText());
     fr.readAsText(file);
     // fr.readAsDataURL(file);
@@ -447,9 +452,9 @@ function handleFile(){
   console.log("yo");
 }
 // Adding the values to the textarea
-function receivedText() {
-  document.getElementById('ti').value = fr.result;
-}
+// function receivedText() {
+//   document.getElementById('ti').value = fr.result;
+// }
 
 /* END HANDLING INPUT FILES */
 
