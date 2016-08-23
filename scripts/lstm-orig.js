@@ -413,39 +413,9 @@ var gradCheck = function() {
 
 /* Converting MIDI to JSON */
 function midi_json(){
-  var reader = new FileReader();
-  var events = new MIDIEvents();
-
-  reader.onloadend = function(e){
-    var arrayBuffer = reader.result;
-  };
-  reader.onerror = function(e) {
-      console.log(e);
-  };
-
-  var musicFile = document.getElementById('file').files[0];
-  var buffer = reader.readAsArrayBuffer(musicFile);
-
-  
-  var midiFile = new MIDIFile(buffer);
-
-  // Reading headers
-  midiFile.header.getFormat(); // 0, 1 or 2
-  midiFile.header.getTracksCount(); // n
-  // Time division
-  if(midiFile.header.getTimeDivision() === 2) {
-      console.log(midiFile.header.getTicksPerBeat());
-
-  } else {
-      midiFile.header.getSMPTEFrames();
-      midiFile.header.getTicksPerFrame();
-  }
-
-  // var events = midiFile.getTrackEvents(0);
-
-  // events.forEach(console.log.bind(console));
-
-  events.writeToTrack();
+  MidiConvert.load("scripts/alb_se2.mid", function(midiData){
+    console.log(midiData);
+  });
 }
 
 /*
