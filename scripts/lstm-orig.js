@@ -408,7 +408,7 @@ var gradCheck = function() {
   }
 }
 
-/* HANDLING INPUT FILES */
+/* HANDLING INPUT FILES */ 
 
 /* Append text to textarea */
 function appendVal(value){
