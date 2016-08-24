@@ -410,18 +410,45 @@ var gradCheck = function() {
 
 /* HANDLING INPUT FILES */
 
-
 /* Converting MIDI to JSON */
 function midi_json(){
   var reader = new FileReader();
+  var json;
   reader.onload = function(e){
     var text = MidiConvert.parse(e.target.result);
     console.log(MidiConvert.parse(e.target.result));
     $('#ti').val(JSON.stringify(text, undefined, 2));
-    // document.getElementById('ti').value = JSON.parse(text);
+    json = JSON.stringify(text, undefined, 2);
+  
+    var synth = new Tone.PolySynth(4, Tone.Synth, {
+      "volume" : -8,
+      "oscillator" : {
+        "partials" : [1, 2, 1],
+      },
+      "portamento" : 0.05
+    }).toMaster()
+
+    Tone.Transport.set(text.transport);
+    var midiPart = new Tone.Part(function(time, event){
+        synth.triggerAttackRelease(event.note, event.duration, time, event.velocity);
+    }, text.tracks[1].notes).start();
+
+    //start the transport to hear the events
+    Tone.Transport.start();
   }
   reader.readAsBinaryString(document.getElementById("file").files[0]);
+  
+
 }
+
+// function play_midi(){
+//   var buffer = new Tone.Buffer("/scripts/alb_se2.mid", function(){
+//     var buff = buffer.get();
+//   });
+//   console.log("The buffer is loaded? " + buffer.loaded);
+//   var player = new Tone.Player(buffer).toMaster();
+//   player.autostart = true;
+// }
 
 /*
   Creating a button where you can upload your own file to the model
@@ -449,7 +476,6 @@ function handleFile(){
     console.log("This is a MIDI file");
     midi_json();
   }
-  console.log("yo");
 }
 // Adding the values to the textarea
 // function receivedText() {
