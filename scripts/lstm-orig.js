@@ -421,26 +421,35 @@ function appendVal(value){
 /* Converting MIDI to JSON */
 function midi_json(file){
   var reader = new FileReader();
+  var text;
   reader.onload = function(e){
-    var text = MidiConvert.parse(e.target.result);
+    text = MidiConvert.parse(e.target.result);
     // $('#ti').appendVal(JSON.stringify(text, undefined, 2) + "$$$");
     $('#ti').val(function(value){
         return $('#ti').val() + JSON.stringify(text, undefined, 2) + "$$$";
     });
-    write_to_file(JSON.stringify(text, undefined, 2) + "$$$");
   }
+  write_to_file(JSON.stringify(text, undefined, 2) + "$$$");
   reader.readAsBinaryString(file);
 }
 
 /* Write Music JSON to a TXT file */
 function write_to_file(data){
-  var txtFile = "/data.txt"
-  var file = new File(txtFile);
-  var str = data;
+  var textFile = null,
+  makeTextFile = function (text) {
+    var data = new Blob([text], {type: 'text/plain'});
 
-  file.open('w');
-  file.write(str);
-  file.close();
+    if (textFile !== null) {
+      window.URL.revokeObjectURL(textFile);
+    }
+
+    textFile = window.URL.createObjectURL(data);
+    return textFile;
+  };
+  
+  makeTextFile(data);
+  console.log(makeTextFile(data));
+
 }
 
 /* PLAY MIDI IN BROWSER */
@@ -599,17 +608,18 @@ $(function() {
   $(document).on('change', ':file', function() {
     var input = $(this);
     var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+    var label = "";
     for(var i = 0; i < numFiles; i ++){
-      var label = input.get(0).files[i].name;
-      input.trigger('fileselect', [numFiles, label]);
+       label += input.get(0).files[i].name + "<br>";
     }
+    input.trigger('fileselect', [numFiles, label]);
   });
   /* Watching the file(s) we picked */
   $(':file').on('fileselect', function(event, numFiles, label) {
       var ti = $('#textinput');
       var input = $(this).parents('.input-group').find(':text');
       handleFile();
-      input.val(label);
+      input.val(numFiles + " files were uploaded");
       ti.append(label + "<br>");
   });
 }); 
