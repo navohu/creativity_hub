@@ -410,27 +410,18 @@ var gradCheck = function() {
 
 /* HANDLING INPUT FILES */ 
 
-/* Append text to textarea */
-function appendVal(value){
-  console.log(this, this.val)
-  return this.val(function(i, val) {
-    return val + value
-  });
+/* Read file with callback */
+function readFile(file, onLoadCallback){
+  var reader = new FileReader();
+  reader.onload = onLoadCallback;
+  reader.readAsBinaryString(file);
 }
 
 /* Converting MIDI to JSON */
-function midi_json(file){
-  var reader = new FileReader();
-  var text;
-  reader.onload = function(e){
-    text = MidiConvert.parse(e.target.result);
-    // $('#ti').appendVal(JSON.stringify(text, undefined, 2) + "$$$");
-    $('#ti').val(function(value){
-        return $('#ti').val() + JSON.stringify(text, undefined, 2) + "$$$";
-    });
-  }
-  write_to_file(JSON.stringify(text, undefined, 2) + "$$$");
-  reader.readAsBinaryString(file);
+function midi_json(e){
+  text = MidiConvert.parse(e.target.result);
+  return JSON.stringify(text, undefined, 2) + "$$$"; //JSON and separation sign
+  // write_to_file(data);
 }
 
 /* Write Music JSON to a TXT file */
@@ -449,10 +440,9 @@ function write_to_file(data){
   
   makeTextFile(data);
   console.log(makeTextFile(data));
-
 }
 
-/* PLAY MIDI IN BROWSER */
+/* PLAY MIDI IN BROWSER, PUT INSIDE READER.ONLOAD */
 // var synth = new Tone.PolySynth(4, Tone.Synth, {
 //   "volume" : 8,
 //   "oscillator" : {
@@ -487,12 +477,19 @@ function handleFile(){
   }
   else if((/\.(mid)$/i).test(input.files[0].name)){
     console.log("This is a MIDI file");
-    var i;
     var input = document.getElementById("file");
     $('#ti').val("");
-    for(i = 0; i < input.files.length; i++){
-      midi_json(input.files[i]);
+    var data = 'null';
+    for(var i = 0; i < input.files.length - 1; i++){
+      readFile(input.files[i], function(e){
+        data += midi_json(e);
+      });
     }
+    readFile(input.files[input.files.length - 1], function(e){
+        data += midi_json(e);
+        write_to_file(data);
+    });
+
   }
   else {
     fr.onload = receivedText;
