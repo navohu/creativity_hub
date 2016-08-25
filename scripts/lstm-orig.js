@@ -125,7 +125,7 @@ var reinit = function() {
   tick_iter = 0;
 
   // process the input, filter out blanks
-  var data_sents_raw = $('#ti').val().split('\n');
+  var data_sents_raw = $('#ti').val().split('$$$');
   data_sents = [];
   for(var i=0;i<data_sents_raw.length;i++) {
     var sent = data_sents_raw[i].trim();
@@ -299,7 +299,7 @@ function median(values) {
 function predict(){
   var out = "";
   // Printing 10 samples
-  for(var i =0; i < 10; i++){ 
+  for(var i =0; i < 2; i++){ 
     var temp = predictSentence(model, true, sample_softmax_temperature);
     var pred = '<p class="apred">'+ temp + '</p>';
     out = out + pred;
@@ -427,9 +427,23 @@ function midi_json(file){
     $('#ti').val(function(value){
         return $('#ti').val() + JSON.stringify(text, undefined, 2) + "$$$";
     });
+    write_to_file(JSON.stringify(text, undefined, 2) + "$$$");
   }
   reader.readAsBinaryString(file);
 }
+
+/* Write Music JSON to a TXT file */
+function write_to_file(data){
+  var txtFile = "/data.txt"
+  var file = new File(txtFile);
+  var str = data;
+
+  file.open('w');
+  file.write(str);
+  file.close();
+}
+
+/* PLAY MIDI IN BROWSER */
 // var synth = new Tone.PolySynth(4, Tone.Synth, {
 //   "volume" : 8,
 //   "oscillator" : {
@@ -583,15 +597,19 @@ $(function() {
 
   /* Letting the user choose a file to upload */
   $(document).on('change', ':file', function() {
-    var input = $(this),
-        numFiles = input.get(0).files ? input.get(0).files.length : 1,
-        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    input.trigger('fileselect', [numFiles, label]);
+    var input = $(this);
+    var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+    for(var i = 0; i < numFiles; i ++){
+      var label = input.get(0).files[i].name;
+      input.trigger('fileselect', [numFiles, label]);
+    }
   });
   /* Watching the file(s) we picked */
   $(':file').on('fileselect', function(event, numFiles, label) {
+      var ti = $('#textinput');
       var input = $(this).parents('.input-group').find(':text');
       handleFile();
       input.val(label);
+      ti.append(label + "<br>");
   });
 }); 

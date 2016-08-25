@@ -85,14 +85,14 @@
                     <div class="col-sm-6 myColumn">
                       <h3>Input Text</h3>
                       <p class="text-primary">Copy your input in the textbox or upload your own text file.</p>
-                      <textarea class="form-control m-l-1 m-r-1 second textbox" id="ti">
+                      <div id="textinput"></div> <br>
+                      <!-- <textarea class="form-control m-l-1 m-r-1 second textbox" id="ti" contenteditable="false">
 the company has, say, 6 months of runway
 or to put it more brutally, 6 months before they're out of business
 they expect to avoid that by raising more from investors
 that last sentence is the fatal one
-                      </textarea>
-                      <br>
-                      <span class="btn btn-primary" onclick="clearText()">Clear Textarea</span> <br>
+                      </textarea> -->
+                      <!-- <span class="btn btn-primary" onclick="clearText()">Clear Textarea</span> <br> -->
                       <div class="input-group">
                           <label class="input-group-btn">
                               <span class="btn btn-primary">
@@ -101,6 +101,8 @@ that last sentence is the fatal one
                           </label>
                           <input type="text" class="form-control" readonly>
                       </div>
+                      <br>
+                      <span class="btn btn-success" onclick="uploadFiles()">Upload Files</span> 
                       <p id="editor"></p>
                     </div>
                     <div class="col-sm-6 myColumn">
