@@ -15,6 +15,7 @@ var model = {};
 var ppl_list = [];
 var tick_iter = 0;
 var iid = null;
+var globalblob;
 
 var makeStartEndTokens = function(d, count_threshold){
   letterToIndex = {};
@@ -88,6 +89,13 @@ var reinit_learning_rate_slider = function() {
   $("#lr_text").text(learning_rate.toFixed(5));
 }
 
+var read_blob = function(callback){
+  var reader = new FileReader();
+  reader.addEventListener("loadend", callback);
+  reader.readAsText(globalblob);
+}
+
+var data_sents_raw;
 var reinit = function() { // note: reinit writes global vars
   // eval options to set some globals
   eval($("#newnet").val());
@@ -96,11 +104,13 @@ var reinit = function() { // note: reinit writes global vars
   ppl_list = [];
   tick_iter = 0;
 
+  read_blob(function(e){
+    data_sents_raw = e.target.result.split('$$$');
+  });
   // process the input, filter out blanks
-  var data_sents_raw = $('#ti').val().split('\n');
   data_sents = []; //empty data strings
   for(var i=0;i<data_sents_raw.length;i++) {
-    var sent = data_sents_raw[i].trim();
+    var sent = data_sents_raw[i];
     if(sent.length > 0) {
       data_sents.push(sent); //push new values into the array
     }
@@ -399,25 +409,17 @@ function write_to_file(data){
 //start the transport to hear the events
 // Tone.Transport.start();
 
-/*
-  Creating a button where you can upload your own file to the model
-*/
-var globalblob;
-function handleFile(){
-  input = document.getElementById('file');
-  file = input.files[0];
-  fr = new FileReader();
-  if (!input) {
-      alert("Um, couldn't find the fileinput element.");
+/* Check if all are MIDI files */
+var MIDI_check = function(files){
+  for (var i = 0; i < files.length; i++) {
+    if(files[i].type == "audio/midi") {console.log("this is a MIDI file"); continue;}
+    else return false;
   }
-  else if (!input.files) {
-    alert("This browser doesn't seem to support the `files` property of file inputs.");
-  }
-  else if (!input.files[0]) {
-    alert("Please select a file before clicking 'Load'");               
-  }
-  else if((/\.(mid)$/i).test(input.files[0].name)){
-    var input = document.getElementById("file");
+  console.log("All files are MIDI");
+  return true;
+}
+
+var create_text_file = function(input){
     var data;
     readFile(input.files[0], function(e){ //first iteration must be without the initial data
       data = midi_json(e);
@@ -431,23 +433,33 @@ function handleFile(){
         data += midi_json(e);
         globalblob = write_to_file(data);
         console.log(globalblob);
-        // write_to_file(data);
     });
+}
 
+/*
+  Creating a button where you can upload your own file to the model
+*/
+
+function handleFile(){
+  var input = document.getElementById('file');
+  var files = input.files;
+  var fr = new FileReader();
+  if (!input) {
+      alert("Um, couldn't find the fileinput element.");
+  }
+  else if (!input.files) {
+    alert("This browser doesn't seem to support the `files` property of file inputs.");
+  }
+  else if (!input.files[0]) {
+    alert("Please select a file before clicking 'Load'");               
+  }
+  if(MIDI_check(files)){
+    create_text_file(input);
   }
   else {
-    fr.onload = receivedText;
-    fr.readAsText(file);
+    alert("Not all the files you selected were MIDI files");
   }
 
-}
-// Adding the values to the textarea
-function receivedText() {
-  document.getElementById('ti').value = fr.result;
-}
-
-function clearText(){
-  document.getElementById('ti').value = "";
 }
 /* END HANDLING INPUT FILES */
 
