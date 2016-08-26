@@ -11,31 +11,15 @@ var indexToLetter = {};
 var vocab = [];
 var data_sents = [];
 var solver = new R.Solver(); // should be class because it needs memory for step caches
-// var pplGraph = new Rvis.Graph();
-
-
-
 var model = {};
+var ppl_list = [];
+var tick_iter = 0;
+var iid = null;
 
-var initVocab = function(sents, count_threshold) {
-  // go over all characters and keep track of all unique ones seen
-  var txt = sents.join(''); // concat all
-
-  // count up all characters
-  var d = {};
-  for(var i=0,n=txt.length;i<n;i++) {
-    var txti = txt[i];
-    if(txti in d) { d[txti] += 1; } 
-    else { d[txti] = 1; }
-  }
-
-  // filter by count threshold and create pointers
+var makeStartEndTokens = function(d, count_threshold){
   letterToIndex = {};
   indexToLetter = {};
   vocab = [];
-  // NOTE: start at one because we will have START and END tokens!
-  // that is, START token will be index 0 in model letter vectors
-  // and END token will be index 0 in the next character softmax
   var q = 1; 
   for(ch in d) {
     if(d.hasOwnProperty(ch)) {
@@ -48,12 +32,22 @@ var initVocab = function(sents, count_threshold) {
       }
     }
   }
+}
 
+var initVocab = function(sents, count_threshold) {
+  // go over all characters and keep track of all unique ones seen
+  var txt = sents.join(''); // concat all sentences
+  var d = {}; // count up all characters
+  for(var i=0,n=txt.length;i<n;i++) {
+    var txti = txt[i];
+    if(txti in d) { d[txti] += 1; } 
+    else { d[txti] = 1; }
+  }
+  makeStartEndTokens(d, count_threshold);
   // globals written: indexToLetter, letterToIndex, vocab (list), and:
   input_size = vocab.length + 1;
   output_size = vocab.length + 1;
   epoch_size = sents.length;
-  $("#prepro_status").text('Found ' + vocab.length + ' distinct characters ');
 }
 
 var utilAddToModel = function(modelto, modelfrom) {
@@ -66,10 +60,8 @@ var utilAddToModel = function(modelto, modelfrom) {
 }
 
 var initModel = function() {
-  // letter embedding vectors
   var model = {};
   model['Wil'] = new R.RandMat(input_size, letter_size , 0, 0.08);
-  
   if(generator === 'rnn') {
     var rnn = R.initRNN(letter_size, hidden_sizes, output_size);
     utilAddToModel(model, rnn);
@@ -77,7 +69,6 @@ var initModel = function() {
     var lstm = R.initLSTM(letter_size, hidden_sizes, output_size);
     utilAddToModel(model, lstm);
   }
-
   return model;
 }
 
@@ -97,40 +88,21 @@ var reinit_learning_rate_slider = function() {
   $("#lr_text").text(learning_rate.toFixed(5));
 }
 
-var reinit = function() {
-  // note: reinit writes global vars
-
+var reinit = function() { // note: reinit writes global vars
   // eval options to set some globals
   eval($("#newnet").val());
-  console.log(eval($('#newnet').val()));
-
-  // //selecting the generator
-  // var e = document.getElementById('generator');
-  // generator = e.options[1].value;
-
-  // //select the rest of the parameters
-  // hidden_sizes = $('#hidden_sizes').val();
-  // letter_size = $('#letter_size').val();
-  // regc = $('#regc').val();
-  // learning_rate = $('#learning_rate').val();
-  // clipval = $('#clipval').val();
-
-
   reinit_learning_rate_slider();
-
   solver = new R.Solver(); // reinit solver
-  // pplGraph = new Rvis.Graph();
-
   ppl_list = [];
   tick_iter = 0;
 
   // process the input, filter out blanks
-  var data_sents_raw = $('#ti').val().split('$$$');
-  data_sents = [];
+  var data_sents_raw = $('#ti').val().split('\n');
+  data_sents = []; //empty data strings
   for(var i=0;i<data_sents_raw.length;i++) {
     var sent = data_sents_raw[i].trim();
     if(sent.length > 0) {
-      data_sents.push(sent);
+      data_sents.push(sent); //push new values into the array
     }
   }
   // Removes the sample data when restarting
@@ -140,6 +112,29 @@ var reinit = function() {
   initVocab(data_sents, 1); // takes count threshold for characters
   model = initModel();
   initialiseGraph();
+}
+/*
+  Creating a button where you can upload your own file to the model
+*/
+function handleFile(){
+  input = document.getElementById('file');
+  if (!input) {
+      alert("Um, couldn't find the fileinput element.");
+  }
+  else if (!input.files) {
+    alert("This browser doesn't seem to support the `files` property of file inputs.");
+  }
+  else if (!input.files[0]) {
+    alert("Please select a file before clicking 'Load'");               
+  }
+  else {
+    file = input.files[0];
+    fr = new FileReader();
+    fr.onload = function(){
+      document.getElementById('ti').value = fr.result;
+    };
+    fr.readAsText(file);
+  }
 }
 
 var saveModel = function() {
@@ -222,7 +217,6 @@ var predictSentence = function(model, samplei, temperature) {
   var s = '';
   var prev = {};
   while(true) {
-
     // RNN tick
     var ix = s.length === 0 ? 0 : letterToIndex[s[s.length-1]];
     var lh = forwardIndex(G, model, ix, prev);
@@ -231,10 +225,6 @@ var predictSentence = function(model, samplei, temperature) {
     // sample predicted letter
     logprobs = lh.o;
     if(temperature !== 1.0 && samplei) {
-      // scale log probabilities by temperature and renormalize
-      // if temperature is high, logprobs will go towards zero
-      // and the softmax outputs will be more diffuse. if temperature is
-      // very low, the softmax outputs will be more peaky
       for(var q=0,nq=logprobs.w.length;q<nq;q++) {
         logprobs.w[q] /= temperature;
       }
@@ -256,7 +246,7 @@ var predictSentence = function(model, samplei, temperature) {
   return s;
 }
 
-var costfun = function(model, sent) {
+var costfunction = function(model, sent) {
   // takes a model and a sentence and
   // calculates the loss. Also returns the Graph
   // object which can be used to do backprop
@@ -299,7 +289,7 @@ function median(values) {
 function predict(){
   var out = "";
   // Printing 10 samples
-  for(var i =0; i < 2; i++){ 
+  for(var i =0; i < 10; i++){ 
     var temp = predictSentence(model, true, sample_softmax_temperature);
     var pred = '<p class="apred">'+ temp + '</p>';
     out = out + pred;
@@ -308,103 +298,55 @@ function predict(){
 }
 
 function sample(iter){
-    // var pred_div = '<div class="apred">'+pred+'</div>'
   var pred_button = '<button type="button" class="btn btn-lg outline sampleButton" data-toggle="modal" data-target="#myModal' + iter + '"> Open sample ' + tick_iter/100 + '</button><br>';
   $('#samples').append(pred_button);
-  // $('#sample_output').append('<p class="apred">'+pred+'</p>');
-
   $('#samples').append(
     '<div class="modal fade" id="myModal' + iter + '" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Sample' + iter/100 + '</h4></div><div class="modal-body">'+ predict() + '</div></div></div></div>');
-
   $('#sample_style').scrollTop($('#sample_style')[0].scrollHeight);
-
 }
 
-var ppl_list = [];
-var tick_iter = 0;
+var draw_perplexity = function(cost_struct, tick_time){
+  // keep track of perplexity
+  $('#epoch').text('Epoch: ' + (tick_iter/epoch_size).toFixed(2));
+  $('#ppl').text('Perplexity: ' + cost_struct.ppl.toFixed(2));
+  $('#ticktime').text('Forw/bwd time per example: ' + tick_time.toFixed(1) + 'ms');
+}
+
+var draw_analytics = function(median_ppl){
+  //Print values to text area
+  var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median_ppl.toFixed(2) + "\n";
+  var temp = $('#analytics').val();
+  $('#analytics').val(temp + analyticValue);
+  $('#analytics').scrollTop($('#analytics')[0].scrollHeight);
+}
+
 var tick = function() {
-  // sample sentence fromd data
+  // sample sentence from data
   var sentix = R.randi(0,data_sents.length);
   var sent = data_sents[sentix];
-
   var t0 = +new Date();  // log start timestamp
-
-  // evaluate cost function on a sentence
-  var cost_struct = costfun(model, sent);
   
-  // use built up graph to compute backprop (set .dw fields in mats)
-  cost_struct.G.backward();
-  // perform param update
-  var solver_stats = solver.step(model, learning_rate, regc, clipval);
-  //$("#gradclip").text('grad clipped ratio: ' + solver_stats.ratio_clipped)
+  var cost_struct = costfunction(model, sent); // evaluate cost function on a sentence
+  cost_struct.G.backward(); // use built up graph to compute backprop (set .dw fields in mats)
+  solver.step(model, learning_rate, regc, clipval);
+  ppl_list.push(cost_struct.ppl); // keep track of perplexity
 
   var t1 = +new Date();
   var tick_time = t1 - t0;
 
-  ppl_list.push(cost_struct.ppl); // keep track of perplexity
-
   // evaluate now and then
   tick_iter += 1;
   if(tick_iter % 100 === 0) {
-    // draw samples
     sample(tick_iter);
-
   }
   if(tick_iter % 10 === 0) {
-    // draw argmax prediction
-    $('#argmax').html('');
-    var pred = predictSentence(model, false);
-    var pred_div = '<div class="apred">'+pred+'</div>'
-    $('#argmax').append(pred_div);
-
-    // keep track of perplexity
-    $('#epoch').text('Epoch: ' + (tick_iter/epoch_size).toFixed(2));
-    $('#ppl').text('Perplexity: ' + cost_struct.ppl.toFixed(2));
-    $('#ticktime').text('Forw/bwd time per example: ' + tick_time.toFixed(1) + 'ms');
+    draw_perplexity(cost_struct, tick_time);
   }
-
   if(tick_iter % 100 === 0 || tick_iter === 1) {
     var median_ppl = median(ppl_list);
     ppl_list = [];
     updateVisual(tick_iter, median_ppl);
-    // pplGraph.add(tick_iter, median_ppl);
-    // pplGraph.drawSelf(document.getElementById("pplgraph"));
-    
-    //Print values to text area
-    var analyticValue = 'X(Tick iteration): ' + tick_iter + ' Y(Median Perplexity): ' + median_ppl.toFixed(2) + "\n";
-    var temp = $('#analytics').val();
-    $('#analytics').val(temp + analyticValue);
-    $('#analytics').scrollTop($('#analytics')[0].scrollHeight);
-  }
-}
-
-var gradCheck = function() {
-  var model = initModel();
-  var sent = '^test sentence$';
-  var cost_struct = costfun(model, sent);
-  cost_struct.G.backward();
-  var eps = 0.000001;
-
-  for(var k in model) {
-    if(model.hasOwnProperty(k)) {
-      var m = model[k]; // mat ref
-      for(var i=0,n=m.w.length;i<n;i++) {
-        
-        oldval = m.w[i];
-        m.w[i] = oldval + eps;
-        var c0 = costfun(model, sent);
-        m.w[i] = oldval - eps;
-        var c1 = costfun(model, sent);
-        m.w[i] = oldval;
-
-        var gnum = (c0.cost - c1.cost)/(2 * eps);
-        var ganal = m.dw[i];
-        var relerr = (gnum - ganal)/(Math.abs(gnum) + Math.abs(ganal));
-        if(relerr > 1e-1) {
-          console.log(k + ': numeric: ' + gnum + ', analytic: ' + ganal + ', err: ' + relerr);
-        }
-      }
-    }
+    draw_analytics(median_ppl);
   }
 }
 
@@ -429,17 +371,15 @@ function write_to_file(data){
   var textFile = null,
   makeTextFile = function (text) {
     var data = new Blob([text], {type: 'text/plain'});
-
     if (textFile !== null) {
       window.URL.revokeObjectURL(textFile);
     }
-
     textFile = window.URL.createObjectURL(data);
-    return textFile;
+    console.log(textFile);
+    return data;
   };
-  
-  makeTextFile(data);
-  console.log(makeTextFile(data));
+  // console.log(makeTextFile(data));
+  return makeTextFile(data);
 }
 
 /* PLAY MIDI IN BROWSER, PUT INSIDE READER.ONLOAD */
@@ -462,6 +402,7 @@ function write_to_file(data){
 /*
   Creating a button where you can upload your own file to the model
 */
+var globalblob;
 function handleFile(){
   input = document.getElementById('file');
   file = input.files[0];
@@ -476,18 +417,21 @@ function handleFile(){
     alert("Please select a file before clicking 'Load'");               
   }
   else if((/\.(mid)$/i).test(input.files[0].name)){
-    console.log("This is a MIDI file");
     var input = document.getElementById("file");
-    $('#ti').val("");
-    var data = 'null';
-    for(var i = 0; i < input.files.length - 1; i++){
-      readFile(input.files[i], function(e){
+    var data;
+    readFile(input.files[0], function(e){ //first iteration must be without the initial data
+      data = midi_json(e);
+    });
+    for(var i = 1; i < input.files.length - 1; i++){
+      readFile(input.files[i], function(e){ //the middle iterations you add the data together
         data += midi_json(e);
       });
     }
-    readFile(input.files[input.files.length - 1], function(e){
+    readFile(input.files[input.files.length - 1], function(e){ //last iteration you write to file
         data += midi_json(e);
-        write_to_file(data);
+        globalblob = write_to_file(data);
+        console.log(globalblob);
+        // write_to_file(data);
     });
 
   }
@@ -507,41 +451,16 @@ function clearText(){
 }
 /* END HANDLING INPUT FILES */
 
-/* START MAIN FUNCTION */
-var iid = null;
-$(function() {
-  // pplGraph.drawSelf(document.getElementById("pplgraph"));
-  initialiseGraph();
-  $('#epoch').text('Epoch: ' + 0);
-  $('#ppl').text('Perplexity: ' + 0);
-  $('#ticktime').text('Forw/bwd time per example: ' + 0);
-  $('#mean_ppl').text('Median Perplexity: ' + 0);
-  $('#tick_iter').text('Tick iteration: ' + 0);
-
-  //initial print
-  var analyticValue = 'X(Tick iteration): ' + 0 + ' Y(Median Perplexity): ' + 0 + "\n";
-  var temp = $('#analytics').val();
-  $('#analytics').val(temp + analyticValue);
-
-  //initial found of characters
-  $("#prepro_status").text('Found ' + 0 + ' distinct characters ');
-
-  //initial learning rate slider
-  $("#lr_text").text(0);
-  //initial softmax temperature slidr
-  $("#temperature_text").text(0);
-
+var learn_stop_resume = function(){
   // attach button handlers
   $('#learn').click(function(){ 
     reinit();
     if(iid !== null) { 
       clearInterval(iid); 
-      initialiseGraph();
-      $('#analytics').val("");
+      // $('#analytics').val("");
     }
     if($("#stop").data('clicked', true)){
       clearInterval(iid); 
-      initialiseGraph();
       $('#analytics').val("");
     }
     iid = setInterval(tick, 0);
@@ -555,12 +474,54 @@ $(function() {
       iid = setInterval(tick, 0); 
     }
   });
+}
 
-  // initialise all model parameter updates
-  $("form div").append('<div class="inc button">+</div><div class="dec button">-</div>');
+var initialise_learning_slider = function(){
+  //initial Learning Rate Slider
+  $("#lr_slider").slider({
+    min: Math.log10(0.01) - 3.0,
+    max: Math.log10(0.01) + 0.05,
+    step: 0.05,
+    value: 0
+  });
+}
 
+var initialise_temperature_slider = function(){
+  //initial temperature slider
+  $("#temperature_slider").slider({
+    min: -1,
+    max: 1.05,
+    step: 0.05,
+    value: 0,
+    slide: function( event, ui ) {
+      sample_softmax_temperature = Math.pow(10, ui.value);
+      $("#temperature_text").text( sample_softmax_temperature.toFixed(2) );
+      console.log(sample_softmax_temperature);
+    }
+  });
+}
+
+var initialise_values = function(){
+  initialiseGraph();
+  $('#epoch').text('Epoch: ' + 0);
+  $('#ppl').text('Perplexity: ' + 0);
+  $('#ticktime').text('Forw/bwd time per example: ' + 0);
+  $('#mean_ppl').text('Median Perplexity: ' + 0);
+  $('#tick_iter').text('Tick iteration: ' + 0);
+
+  //initial analytics print
+  var analyticValue = 'X(Tick iteration): ' + 0 + ' Y(Median Perplexity): ' + 0 + "\n";
+  var temp = $('#analytics').val();
+  $('#analytics').val(temp + analyticValue);
+
+  $("#lr_text").text(0);//initial learning rate slider
+  $("#temperature_text").text(0);//initial softmax temperature slidr
+  initialise_learning_slider();
+  initialise_temperature_slider();
+}
+
+var save_load_model = function(){
   // $('#loadText').click(loadText());
-
   $("#savemodel").click(saveModel);
   $("#loadmodel").click(function(){
     var j = JSON.parse($("#tio").val());
@@ -575,32 +536,9 @@ $(function() {
   //     loadModel(data);
   //   });
   // });
+}
 
-  // $("#learn").click(); // simulate click on startup
-
-  //$('#gradcheck').click(gradCheck);
-
-  //initial Learning Rate Slider
-  $("#lr_slider").slider({
-    min: Math.log10(0.01) - 3.0,
-    max: Math.log10(0.01) + 0.05,
-    step: 0.05,
-    value: 0
-  });
-
-  //initial temperature slider
-  $("#temperature_slider").slider({
-    min: -1,
-    max: 1.05,
-    step: 0.05,
-    value: 0,
-    slide: function( event, ui ) {
-      sample_softmax_temperature = Math.pow(10, ui.value);
-      $("#temperature_text").text( sample_softmax_temperature.toFixed(2) );
-      console.log(sample_softmax_temperature);
-    }
-  });
-
+var upload_text_file = function(){
   /* Letting the user choose a file to upload */
   $(document).on('change', ':file', function() {
     var input = $(this);
@@ -619,4 +557,11 @@ $(function() {
       input.val(numFiles + " files were uploaded");
       ti.append(label + "<br>");
   });
+}
+
+$(function() { //everything on page at page load
+  initialise_values();
+  learn_stop_resume();
+  upload_text_file();
+  // save_load_model();
 }); 

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head> 
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Creativity Hub</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+
+      <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="style/main.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link href="lib/jquery-ui.min.css" rel="stylesheet">
+
+    <script src="lib/jquery-1.8.3.min.js"></script>
+    <script src="lib/jquery-ui.min.js"></script>
+    <script src="lib/MidiConvert/build/MidiConvert.js"></script>
+    <script src="lib/Tone.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="scripts/recurrent.js"></script>
+    <script src="scripts/vis.js"></script>
+    <script src="scripts/music.js"></script>
+  </head>
+
+  <body>
+      <!-- <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#">Character Based Generator</a>
+            <a class="navbar-brand" href="#">Text to Image Generator</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+              <li class="active"><a href="#">Demo <span class="sr-only">(current)</span></a></li>
+              <li><a href="#">Updates</a></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+              <li><a href="">About</a></li>
+            </ul>
+          </div> -->
+          <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-1 main">
+            <h1 class="page-header">Deep Recurrent Nets Character Generation</h1>
+            <p>This is a demo to train a character-based neural network with your own input. The visualisation and model is using the JS library <a href="https://github.com/karpathy/recurrentjs">RecurrentJS</a>. You can upload your own text and see samples of the new text. Also check out the source code for this project: <a href="https://github.com/navohu/creativity_hub">Creativity Hub</a>.</p>
+            <div class="row placeholders">
+                <div id="wrap">
+                  <div class="row">
+                    <div class="col-sm-6 myColumn">
+                      <h3>Training Graph</h3>
+                      <svg id="visualisation"></svg>
+                    </div>
+                    <div class="col-sm-6 myColumn">
+                      <h3>Analytics</h3>
+                      <button type="button" id="learn" class="btn btn-success btn-lg" aria-pressed="true">Learn/Restart</button>
+                      <br>
+                      <button type="button" id="resume" class="btn btn-warning btn-lg" aria-pressed="true">Resume</button>
+                      <br>
+                      <button type="button" id="stop" class="btn btn-danger btn-lg" aria-pressed="true">Pause</button>
+                      <br>
+                      <textarea id="analytics" class="form-control m-l-1 m-r-1 textbox"></textarea>
+                      <div class="lead" id="ticktime"></div>
+                      <div class="lead" id="gradclip"></div>
+                      <div class="lead" id="epoch"></div>
+                      <div class="lead" id="ppl"></div>
+                    </div>
+                  </div>
+                  <div>
+                  <div class="row">
+                    <div class="col-sm-6 myColumn">
+                      <h3>Input Text</h3>
+                      <p class="text-primary">Copy your input in the textbox or upload your own text file.</p>
+                      <div id="textinput"></div> <br>
+                      <!-- <span class="btn btn-primary" onclick="clearText()">Clear Textarea</span> <br> -->
+                      <div class="input-group">
+                          <label class="input-group-btn">
+                              <span class="btn btn-primary">
+                                  Browse Text&hellip; <input multiple type="file" id="file" style="display: none;">
+                              </span>
+                          </label>
+                          <input type="text" class="form-control" readonly>
+                      </div>
+                      <br>
+                      <p id="editor"></p>
+                    </div>
+                    <div class="col-sm-6 myColumn">
+                      <h3>Model Parameters</h3>
+                      <p class="text-primary">Change the parameters if you wish.</p>
+                      <textarea class="form-control m-l-1 m-r-1 second textbox" id="newnet" style="width:100%; height:200px;">
+// model parameters
+generator = 'lstm'; // can be 'rnn' or 'lstm'
+hidden_sizes = [20,20]; // list of sizes of hidden layers
+letter_size = 5; // size of letter embeddings
+
+// optimization
+regc = 0.000001; // L2 regularization strength
+learning_rate = 0.01; // learning rate
+clipval = 5.0; // clip gradients at this value
+                        </textarea>
+                        <br>
+                    </div>
+                  </div>
+                  <br />
+                  <!-- <button id="gradcheck">gradcheck</button> -->
+                  <div class="row">
+                  <div class="col-sm-6 myColumn">
+                    <h3>Model Samples</h3>
+                    <p class="text-primary">These are samples from the model that is generated every 100th iteration.</p>
+                    <div id="sample_style">
+                      <div id="samples"></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 myColumn">
+                      <h3>Learning rate</h3>
+                      <div class="aslider">
+                        <p class="text-primary">Learning rate: you want to modify this over time if you're training for longer time.</p>
+                        <div class="theslider" id="lr_slider"></div>
+                        <div class="slider_value" id="lr_text"></div>
+                      </div>
+
+                      <h3>Softmax temperature</h3>
+                      <div id="controls">
+                        <div class="aslider">
+                          <p class="text-primary">Softmax sample temperature: lower setting will generate more likely predictions, but you'll see more of the same common words again and again. Higher setting will generate less frequent words but you might see more spelling errors.</p>
+                          <div class="theslider" id="temperature_slider"></div>
+                          <div class="slider_value" id="temperature_text"></div>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div> 
+
+      <!-- Bootstrap core JavaScript
+      ================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <script type="text/javascript" src="scripts/vis.js"></script>
+  </body>
+</html>
