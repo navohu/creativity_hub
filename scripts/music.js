@@ -16,6 +16,8 @@ var ppl_list = [];
 var tick_iter = 0;
 var iid = null;
 var globalblob;
+var array_size = 50;
+var data_sents_raw = new Array(array_size);
 
 var makeStartEndTokens = function(d, count_threshold){
   letterToIndex = {};
@@ -95,33 +97,31 @@ var read_blob = function(callback){
   reader.readAsText(globalblob);
 }
 
-var data_sents_raw;
 var reinit = function() { // note: reinit writes global vars
-  // eval options to set some globals
-  eval($("#newnet").val());
-  reinit_learning_rate_slider();
-  solver = new R.Solver(); // reinit solver
-  ppl_list = [];
-  tick_iter = 0;
-
-  read_blob(function(e){
-    data_sents_raw = e.target.result.split('$$$');
-  });
-  // process the input, filter out blanks
-  data_sents = []; //empty data strings
-  for(var i=0;i<data_sents_raw.length;i++) {
-    var sent = data_sents_raw[i];
-    if(sent.length > 0) {
-      data_sents.push(sent); //push new values into the array
+  console.log(data_sents_raw);
+    debugger;
+    // eval options to set some globals
+    eval($("#newnet").val());
+    reinit_learning_rate_slider();
+    solver = new R.Solver(); // reinit solver
+    ppl_list = [];
+    tick_iter = 0;
+    // data_sents_raw = e.target.result.split('$$$');
+    // process the input, filter out blanks
+    data_sents = []; //empty data strings
+    for(var i=0;i<data_sents_raw.length;i++) {
+      var sent = data_sents_raw[i];
+      if(sent.length > 0) {
+        data_sents.push(sent); //push new values into the array
+      }
     }
-  }
-  // Removes the sample data when restarting
-  while($('#samples').children().length > 0){
-    $('#samples').empty()
-  }
-  initVocab(data_sents, 1); // takes count threshold for characters
-  model = initModel();
-  initialiseGraph();
+    // Removes the sample data when restarting
+    while($('#samples').children().length > 0){
+      $('#samples').empty()
+    }
+    initVocab(data_sents, 1); // takes count threshold for characters
+    model = initModel();
+    initialiseGraph();
 }
 /*
   Creating a button where you can upload your own file to the model
@@ -362,36 +362,6 @@ var tick = function() {
 
 /* HANDLING INPUT FILES */ 
 
-/* Read file with callback */
-function readFile(file, onLoadCallback){
-  var reader = new FileReader();
-  reader.onload = onLoadCallback;
-  reader.readAsBinaryString(file);
-}
-
-/* Converting MIDI to JSON */
-function midi_json(e){
-  text = MidiConvert.parse(e.target.result);
-  return JSON.stringify(text, undefined, 2) + "$$$"; //JSON and separation sign
-  // write_to_file(data);
-}
-
-/* Write Music JSON to a TXT file */
-function write_to_file(data){
-  var textFile = null,
-  makeTextFile = function (text) {
-    var data = new Blob([text], {type: 'text/plain'});
-    if (textFile !== null) {
-      window.URL.revokeObjectURL(textFile);
-    }
-    textFile = window.URL.createObjectURL(data);
-    console.log(textFile);
-    return data;
-  };
-  // console.log(makeTextFile(data));
-  return makeTextFile(data);
-}
-
 /* PLAY MIDI IN BROWSER, PUT INSIDE READER.ONLOAD */
 // var synth = new Tone.PolySynth(4, Tone.Synth, {
 //   "volume" : 8,
@@ -409,6 +379,91 @@ function write_to_file(data){
 //start the transport to hear the events
 // Tone.Transport.start();
 
+/* Write Music JSON to a TXT file */
+function write_to_file(ok){
+  var textFile = null,
+  makeTextFile = function (text) {
+    var data = new Blob([text], {type: 'text/plain'});
+    if (textFile !== null) {
+      window.URL.revokeObjectURL(textFile);
+    }
+    textFile = window.URL.createObjectURL(data);
+    console.log(textFile);
+    return data;
+  };
+  return makeTextFile(ok);
+}
+
+/* Converting MIDI to JSON */
+function midi_json(e, i){
+  text = MidiConvert.parse(e.target.result);
+  result = JSON.stringify(text, undefined, 2);
+  data_sents_raw[i] = result;
+  // console.log(data_sents_raw); //THIS PRINTS THE RIGHT ARRAY
+  return result; //JSON and separation sign
+}
+
+/* Read file with callback */
+function readFile(file, onLoadCallback){
+  var reader = new FileReader();
+  reader.onload = onLoadCallback;
+  reader.readAsBinaryString(file);
+}
+
+function asyncLoop(iterations, func, callback) {
+    var index = 0;
+    var done = false;
+    var loop = {
+        next: function() {
+            if (done) {
+                return;
+            }
+
+            if (index < iterations) {
+                index++;
+                func(loop);
+
+            } else {
+                done = true;
+                callback;
+            }
+        },
+
+        iteration: function() {
+            return index - 1;
+        },
+
+        break: function() {
+            done = true;
+            callback();
+        }
+    };
+    loop.next();
+    return loop;
+}
+
+var create_text_file = function(input){
+    var data;
+    readFile(input.files[0], function(e){ //first iteration must be without the initial data
+      var i = 0;
+      data = midi_json(e, i);
+    });
+    asyncLoop(input.files.length-2, function(loop){
+      readFile(input.files[loop.iteration() + 1], function(e){ //the middle iterations you add the data together
+        data += midi_json(e, loop.iteration() + 1);
+        console.log(loop.iteration() + 1);
+        loop.next();
+      });
+    });
+    readFile(input.files[input.files.length - 1], function(e){ //last iteration you write to file
+        var i = input.files.length - 1;
+        data += midi_json(e, i);
+        globalblob = write_to_file(data);
+        console.log(globalblob);
+
+    });
+}
+
 /* Check if all are MIDI files */
 var MIDI_check = function(files){
   for (var i = 0; i < files.length; i++) {
@@ -417,23 +472,6 @@ var MIDI_check = function(files){
   }
   console.log("All files are MIDI");
   return true;
-}
-
-var create_text_file = function(input){
-    var data;
-    readFile(input.files[0], function(e){ //first iteration must be without the initial data
-      data = midi_json(e);
-    });
-    for(var i = 1; i < input.files.length - 1; i++){
-      readFile(input.files[i], function(e){ //the middle iterations you add the data together
-        data += midi_json(e);
-      });
-    }
-    readFile(input.files[input.files.length - 1], function(e){ //last iteration you write to file
-        data += midi_json(e);
-        globalblob = write_to_file(data);
-        console.log(globalblob);
-    });
 }
 
 /*
@@ -459,7 +497,6 @@ function handleFile(){
   else {
     alert("Not all the files you selected were MIDI files");
   }
-
 }
 /* END HANDLING INPUT FILES */
 
