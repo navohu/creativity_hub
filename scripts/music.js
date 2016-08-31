@@ -98,8 +98,6 @@ var read_blob = function(callback){
 }
 
 var reinit = function() { // note: reinit writes global vars
-  console.log(data_sents_raw);
-    debugger;
     // eval options to set some globals
     eval($("#newnet").val());
     reinit_learning_rate_slider();
@@ -111,6 +109,7 @@ var reinit = function() { // note: reinit writes global vars
     data_sents = []; //empty data strings
     for(var i=0;i<data_sents_raw.length;i++) {
       var sent = data_sents_raw[i];
+      if(sent === undefined) {break;}
       if(sent.length > 0) {
         data_sents.push(sent); //push new values into the array
       }
@@ -122,29 +121,6 @@ var reinit = function() { // note: reinit writes global vars
     initVocab(data_sents, 1); // takes count threshold for characters
     model = initModel();
     initialiseGraph();
-}
-/*
-  Creating a button where you can upload your own file to the model
-*/
-function handleFile(){
-  input = document.getElementById('file');
-  if (!input) {
-      alert("Um, couldn't find the fileinput element.");
-  }
-  else if (!input.files) {
-    alert("This browser doesn't seem to support the `files` property of file inputs.");
-  }
-  else if (!input.files[0]) {
-    alert("Please select a file before clicking 'Load'");               
-  }
-  else {
-    file = input.files[0];
-    fr = new FileReader();
-    fr.onload = function(){
-      document.getElementById('ti').value = fr.result;
-    };
-    fr.readAsText(file);
-  }
 }
 
 var saveModel = function() {
@@ -335,7 +311,8 @@ var tick = function() {
   var sentix = R.randi(0,data_sents.length);
   var sent = data_sents[sentix];
   var t0 = +new Date();  // log start timestamp
-  
+  // console.log(sent);
+  // debugger;
   var cost_struct = costfunction(model, sent); // evaluate cost function on a sentence
   cost_struct.G.backward(); // use built up graph to compute backprop (set .dw fields in mats)
   solver.step(model, learning_rate, regc, clipval);
@@ -379,37 +356,6 @@ var tick = function() {
 //start the transport to hear the events
 // Tone.Transport.start();
 
-/* Write Music JSON to a TXT file */
-function write_to_file(ok){
-  var textFile = null,
-  makeTextFile = function (text) {
-    var data = new Blob([text], {type: 'text/plain'});
-    if (textFile !== null) {
-      window.URL.revokeObjectURL(textFile);
-    }
-    textFile = window.URL.createObjectURL(data);
-    console.log(textFile);
-    return data;
-  };
-  return makeTextFile(ok);
-}
-
-/* Converting MIDI to JSON */
-function midi_json(e, i){
-  text = MidiConvert.parse(e.target.result);
-  result = JSON.stringify(text, undefined, 2);
-  data_sents_raw[i] = result;
-  // console.log(data_sents_raw); //THIS PRINTS THE RIGHT ARRAY
-  return result; //JSON and separation sign
-}
-
-/* Read file with callback */
-function readFile(file, onLoadCallback){
-  var reader = new FileReader();
-  reader.onload = onLoadCallback;
-  reader.readAsBinaryString(file);
-}
-
 function asyncLoop(iterations, func, callback) {
     var index = 0;
     var done = false;
@@ -442,6 +388,37 @@ function asyncLoop(iterations, func, callback) {
     return loop;
 }
 
+/* Write Music JSON to a TXT file */
+function write_to_file(ok){
+  var textFile = null,
+  makeTextFile = function (text) {
+    var data = new Blob([text], {type: 'text/plain'});
+    if (textFile !== null) {
+      window.URL.revokeObjectURL(textFile);
+    }
+    textFile = window.URL.createObjectURL(data);
+    console.log(textFile);
+    return data;
+  };
+  return makeTextFile(ok);
+}
+
+/* Converting MIDI to JSON */
+function midi_json(e, i){
+  var text = MidiConvert.parse(e.target.result);
+  var result = JSON.stringify(text, undefined, 2);
+  data_sents_raw[i] = result;
+  // console.log(data_sents_raw[i]); //THIS PRINTS THE RIGHT ARRAY
+  return result; //JSON and separation sign
+}
+
+/* Read file with callback */
+function readFile(file, onLoadCallback){
+  var reader = new FileReader();
+  reader.onload = onLoadCallback;
+  reader.readAsBinaryString(file);
+}
+
 var create_text_file = function(input){
     var data;
     readFile(input.files[0], function(e){ //first iteration must be without the initial data
@@ -451,7 +428,7 @@ var create_text_file = function(input){
     asyncLoop(input.files.length-2, function(loop){
       readFile(input.files[loop.iteration() + 1], function(e){ //the middle iterations you add the data together
         data += midi_json(e, loop.iteration() + 1);
-        console.log(loop.iteration() + 1);
+        // console.log(loop.iteration() + 1);
         loop.next();
       });
     });
