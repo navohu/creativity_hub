@@ -123,67 +123,6 @@ var reinit = function() { // note: reinit writes global vars
     initialiseGraph();
 }
 
-var saveModel = function() {
-  var out = {};
-  out['hidden_sizes'] = hidden_sizes;
-  out['generator'] = generator;
-  out['letter_size'] = letter_size;
-  var model_out = {};
-  for(var k in model) {
-    if(model.hasOwnProperty(k)) {
-      model_out[k] = model[k].toJSON();
-    }
-  }
-  out['model'] = model_out;
-  var solver_out = {};
-  solver_out['decay_rate'] = solver.decay_rate;
-  solver_out['smooth_eps'] = solver.smooth_eps;
-  step_cache_out = {};
-  for(var k in solver.step_cache) {
-    if(solver.step_cache.hasOwnProperty(k)) {
-      step_cache_out[k] = solver.step_cache[k].toJSON();
-    }
-  }
-  solver_out['step_cache'] = step_cache_out;
-  out['solver'] = solver_out;
-  out['letterToIndex'] = letterToIndex;
-  out['indexToLetter'] = indexToLetter;
-  out['vocab'] = vocab;
-  $("#tio").val(JSON.stringify(out));
-}
-
-var loadModel = function(j) {
-  hidden_sizes = j.hidden_sizes;
-  generator = j.generator;
-  letter_size = j.letter_size;
-  model = {};
-  for(var k in j.model) {
-    if(j.model.hasOwnProperty(k)) {
-      var matjson = j.model[k];
-      model[k] = new R.Mat(1,1);
-      model[k].fromJSON(matjson);
-    }
-  }
-  solver = new R.Solver(); // have to reinit the solver since model changed
-  solver.decay_rate = j.solver.decay_rate;
-  solver.smooth_eps = j.solver.smooth_eps;
-  solver.step_cache = {};
-  for(var k in j.solver.step_cache){
-      if(j.solver.step_cache.hasOwnProperty(k)){
-          var matjson = j.solver.step_cache[k];
-          solver.step_cache[k] = new R.Mat(1,1);
-          solver.step_cache[k].fromJSON(matjson);
-      }
-  }
-  letterToIndex = j['letterToIndex'];
-  indexToLetter = j['indexToLetter'];
-  vocab = j['vocab'];
-
-  // reinit these
-  ppl_list = [];
-  tick_iter = 0;
-}
-
 var forwardIndex = function(G, model, ix, prev) {
   var x = G.rowPluck(model['Wil'], ix);
   // forward prop the sequence learner
@@ -339,23 +278,6 @@ var tick = function() {
 
 /* HANDLING INPUT FILES */ 
 
-/* PLAY MIDI IN BROWSER, PUT INSIDE READER.ONLOAD */
-// var synth = new Tone.PolySynth(4, Tone.Synth, {
-//   "volume" : 8,
-//   "oscillator" : {
-//     "partials" : [1, 2, 1],
-//   },
-//   "portamento" : 0.05
-// }).toMaster()
-
-// Tone.Transport.set(text.transport);
-// var midiPart = new Tone.Part(function(time, event){
-//     synth.triggerAttackRelease(event.note, event.duration, time, event.velocity);
-// }, text.tracks[1].notes).start();
-
-//start the transport to hear the events
-// Tone.Transport.start();
-
 function asyncLoop(iterations, func, callback) {
     var index = 0;
     var done = false;
@@ -454,7 +376,6 @@ var MIDI_check = function(files){
 /*
   Creating a button where you can upload your own file to the model
 */
-
 function handleFile(){
   var input = document.getElementById('file');
   var files = input.files;
@@ -553,15 +474,6 @@ var save_load_model = function(){
     var j = JSON.parse($("#tio").val());
     loadModel(j);
   });
-
-  // $("#loadpretrained").click(function(){
-  //   $.getJSON("lstm_100_model.json", function(data) {
-  //     // pplGraph = new Rvis.Graph();
-  //     learning_rate = 0.0001;
-  //     reinit_learning_rate_slider();
-  //     loadModel(data);
-  //   });
-  // });
 }
 
 var upload_text_file = function(){
